@@ -14,6 +14,28 @@ function wp_api_init()
         'methods' => 'POST',
         'callback' => 'wp_api_ep_login'
     ));
+
+    register_rest_route($namespace, '/validate', array(
+        'methods' => 'GET',
+        'callback' => 'wp_api_ep_validate'
+    ));
+}
+function wp_api_ep_validate($request)
+{
+    $array = array('valid' => false);
+
+    $params = $request->get_params();
+
+    if (!empty($params['jwt'])) {
+        $jwt = new JWT();
+        $info = $jwt->validate($params['jwt']);
+
+        if ($info && !empty($info->id)) {
+            $array['valid'] = true;
+        }
+    }
+    
+    return $array;
 }
 
 function wp_api_ep_login($request)
