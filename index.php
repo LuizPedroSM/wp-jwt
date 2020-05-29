@@ -19,7 +19,25 @@ function wp_api_init()
         'methods' => 'GET',
         'callback' => 'wp_api_ep_validate'
     ));
+
+    add_filter('rest_pre_dispatch', 'wb_rest_pre_dispatch', 10, 3);
 }
+
+function wb_rest_pre_dispatch($url, $server, $request)
+{
+    $params = $request->get_params();
+
+    if (!empty($params['jwt'])) {
+        $jwt = new JWT();
+        $info = $jwt->validate($params['jwt']);
+
+        if ($info && !empty($info->id)) {
+            wp_set_current_user($info->id);
+        }
+    }
+
+}
+
 function wp_api_ep_validate($request)
 {
     $array = array('valid' => false);
